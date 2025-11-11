@@ -1,6 +1,6 @@
 import torch
 import sys
-from transformers import AutoTokenizer, AutoModelForCausalLM  # <-- Corrected class name
+from transformers import AutoTokenizer, AutoModelForCausalLM
 from utils.process_args import process_args_ptq
 from eval_utils.rotation_utils import rotate_model
 from train_utils.main import prepare_model
@@ -9,13 +9,21 @@ from train_utils.main import prepare_model
 # This script mimics the model loading logic from ptq.py
 # ---
 
+# !!!
+# Using a model-specific path structure as you suggested.
+# !!!
+MODEL_NAME = "Llama-3.2-3B-Instruct"
+MODEL_ID = f"meta-llama/{MODEL_NAME}"
+# Path is now dynamically set based on the MODEL_NAME
+OPTIMIZED_ROTATION_PATH = f"/app/models/{MODEL_NAME}/rotation/R.bin" 
+
 print("--- Starting Inference Script ---")
 
 # 1. Manually set ALL arguments
 # We have to spoof sys.argv for the process_args_ptq function
 sys.argv = [
     'run_inference.py',
-    '--input_model', 'meta-llama/Llama-3.2-3B-Instruct',
+    '--input_model', MODEL_ID, # Use variable
     '--w_bits', '4',
     '--a_bits', '4',
     '--k_bits', '4',
@@ -27,7 +35,7 @@ sys.argv = [
     '--k_groupsize', '128',
     '--v_groupsize', '128',
     '--rotate',
-    '--optimized_rotation_path', '/app/your_path/R.bin',
+    '--optimized_rotation_path', OPTIMIZED_ROTATION_PATH, # Use the corrected path
     '--bf16',
 ]
 
