@@ -5,7 +5,7 @@ services:
     build: .
     # (Optional) Give the built image a friendly name
     image: spinquant-image
-    
+
     # 2. GPU Access: This is the modern way to give the container
     # access to all available NVIDIA GPUs.
     deploy:
@@ -14,22 +14,23 @@ services:
           devices:
             - driver: nvidia
               count: all
-              capabilities: [gpu]
-              
+              capabilities: [ gpu ]
+
     # 3. Environment: Loads variables from the .env file.
     # This is the best way to securely pass your HF_TOKEN.
     env_file:
       - .env
-      
+
     # 4. Volumes: This maps local folders to folders inside the container.
     # This way, your model cache, outputs, and logs are saved
     # on your host machine, not lost when the container stops.
     volumes:
+      - .:/app
       - ./models/rotation:/app/models/rotation
       - ./output:/app/output
       - ./logs:/app/logs
       - ./cache/huggingface:/app/cache/huggingface
-      
+
     # 5. Interactive: Keeps the container running so you can
     # attach a bash shell to it.
     stdin_open: true
