@@ -15,7 +15,7 @@ print("--- Starting Inference Script ---")
 # We have to spoof sys.argv for the process_args_ptq function
 sys.argv = [
     'run_inference.py',
-    '--input_model', 'meta-llama/Llama-3.2-1B-Instruct',
+    '--input_model', 'meta-llama/Llama-3.2-3B-Instruct',
     '--w_bits', '4',
     '--a_bits', '4',
     '--k_bits', '4',
@@ -24,8 +24,8 @@ sys.argv = [
     '--a_asym',
     '--k_asym',
     '--v_asym',
-    '--k_groupsize', '64',
-    '--v_groupsize', '64',
+    '--k_groupsize', '128',
+    '--v_groupsize', '128',
     '--rotate',
     '--optimized_rotation_path', '/app/your_path/R.bin',
     '--bf16',

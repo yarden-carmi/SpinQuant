@@ -32,5 +32,5 @@ torchrun --nnodes=1 --nproc_per_node=1 optimize_rotation.py \
 --a_asym \
 --k_asym \
 --v_asym \
---k_groupsize 64 \
---v_groupsize 64 \
+--k_groupsize $5 \
+--v_groupsize $5 \

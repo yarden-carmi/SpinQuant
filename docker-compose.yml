@@ -12,12 +12,7 @@ services:
     env_file:
       - .env
     volumes:
-      # 1. Mount the main project directory (for code/script changes)
       - .:/app
-
-      # 2. Use your new absolute path for all model data
-      # The container's internal path /app/models/rotation...
-      # now maps to your host's /home/yardenc/docker-temp/models/rotation
       - /home/yardenc/docker-temp/models/rotation:/app/models/rotation
       - /home/yardenc/docker-temp/models/output:/app/output
       - /home/yardenc/docker-temp/models/logs:/app/logs
