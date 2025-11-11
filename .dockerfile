@@ -17,6 +17,31 @@ WORKDIR /app
 # This assumes the Dockerfile is in the root of the SpinQuant-8f47aa3f00e8... directory
 COPY . .
 
+
+# Define the paths as environment variables
+# These paths are *internal* to the container
+ENV OUTPUT_ROTATION_PATH=/app/models/rotation
+ENV OPTIMIZED_ROTATION_PATH=/app/models/rotation/R.bin
+ENV OUTPUT_DIR=/app/output
+ENV LOGGING_DIR=/app/logs
+ENV SAVE_QMODEL_PATH=/app/output/consolidated.00.pth
+
+# Run 'sed' to permanently replace the placeholder paths in the scripts
+# This happens ONCE during 'docker compose build'
+RUN sed -i 's|\"your_path\"|$OUTPUT_ROTATION_PATH|g' scripts/10_optimize_rotation.sh && \
+    sed -i 's|\"your_output_path/\"|$OUTPUT_DIR/|g' scripts/10_optimize_rotation.sh && \
+    sed -i 's|\"your_log_path/\"|$LOGGING_DIR/|g' scripts/10_optimize_rotation.sh && \
+    \
+    sed -i 's|\"your_path/R.bin\"|$OPTIMIZED_ROTATION_PATH|g' scripts/2_eval_ptq.sh && \
+    \
+    sed -i 's|\"your_path\"|$OUTPUT_ROTATION_PATH|g' scripts/31_optimize_rotation_executorch.sh && \
+    sed -i 's|\"your_output_path/\"|$OUTPUT_DIR/|g' scripts/31_optimize_rotation_executorch.sh && \
+    sed -i 's|\"your_log_path/\"|$LOGGING_DIR/|g' scripts/31_optimize_rotation_executorch.sh && \
+    \
+    sed -i 's|\"your_path/R.bin\"|$OPTIMIZED_ROTATION_PATH|g' scripts/32_eval_ptq_executorch.sh && \
+    sed -i 's|\"./your_output_model_path/consolidated.00.pth\"|$SAVE_QMODEL_PATH|g' scripts/32_eval_ptq_executorch.sh
+
+
 # 4. Install Python Dependencies
 # This installs transformers, accelerate, datasets, etc., from requirement.txt
 RUN pip install --no-cache-dir -r requirement.txt
@@ -34,23 +59,25 @@ RUN git clone https://github.com/Dao-AILab/fast-hadamard-transform.git \
 ENV MODEL_NAME=meta-llama/Llama-3.2-1B-Instruct
 
 # Set default paths for outputs (mirroring the script placeholders)
-ENV OUTPUT_ROTATION_PATH /app/models/rotation
-ENV OPTIMIZED_ROTATION_PATH /app/models/rotation/R.bin
-ENV OUTPUT_DIR /app/output
-ENV LOGGING_DIR /app/logs
+ENV OUTPUT_ROTATION_PATH=/app/models/rotation
+ENV OPTIMIZED_ROTATION_PATH=/app/models/rotation/R.bin
+ENV OUTPUT_DIR=/app/output
+ENV LOGGING_DIR=/app/logs
 
 # Set HF cache home to a predictable location
-ENV HF_HOME /app/cache/huggingface
+ENV HF_HOME=/app/cache/huggingface
 
 # Create the directories
 RUN mkdir -p $OUTPUT_ROTATION_PATH $OUTPUT_DIR $LOGGING_DIR $HF_HOME
 
 # 7. Set up Hugging Face Token
 # This token is required to download the gated Llama model.
+# Do NOT store the token in ARG or ENV in the image to avoid embedding sensitive data.
 # Pass at run-time: docker run -e HF_TOKEN="hf_..." ...
-# Or at build-time: docker build --build-arg HF_TOKEN_ARG="hf_..." .
-ARG HF_TOKEN_ARG
-ENV HF_TOKEN=$HF_TOKEN_ARG
+# If the token is needed only during build, use BuildKit secrets instead of ARG/ENV:
+#   DOCKER_BUILDKIT=1 docker build --secret id=hf_token,src=/local/path/token.txt .
+# and in a RUN step access it with: --mount=type=secret,id=hf_token
+# The container should read HF_TOKEN from the runtime environment (no ENV stored in image).
 
 # 8. Set default command
 # Drops the user into a bash shell inside /app.
