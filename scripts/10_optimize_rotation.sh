@@ -10,8 +10,8 @@
 torchrun --nnodes=1 --nproc_per_node=1 optimize_rotation.py \
 --input_model $1  \
 --output_rotation_path "/app/models/rotation/$1/" \
---output_dir "/app/models/output/$1/" \
---logging_dir "/app/models/logs/$1/" \
+--output_dir "/app/output/$1/" \
+--logging_dir "/app/logs/$1/" \
 --model_max_length 2048 \
 --fp16 False \
 --bf16 True \
