@@ -9,9 +9,9 @@
 # nproc_per_node indicates the number of GPUs per node to employ.
 torchrun --nnodes=1 --nproc_per_node=1 optimize_rotation.py \
 --input_model $1  \
---output_rotation_path "/app/models/rotation/$1/" \
---output_dir "/app/output/$1/" \
---logging_dir "/app/logs/$1/" \
+--output_rotation_path "/app/models/rotation/$1/W${2}A${3}KV${4}GS${5}/" \
+--output_dir "/app/output/$1/W${2}A${3}KV${4}GS${5}/" \
+--logging_dir "/app/logs/$1/W${2}A${3}KV${4}GS${5}/" \
 --model_max_length 2048 \
 --fp16 False \
 --bf16 True \

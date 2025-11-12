@@ -62,7 +62,6 @@ print("Applying rotation and quantization...")
 
 # 5. Apply the W4A4KV4 quantization wrappers
 model = prepare_model(ptq_args, model)
-model.to('cuda:0')
 model.eval()
 
 print("--- Model is quantized and ready ---")
