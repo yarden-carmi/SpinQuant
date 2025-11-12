@@ -15,7 +15,7 @@ from train_utils.main import prepare_model
 MODEL_NAME = "Llama-3.2-3B-Instruct"
 MODEL_ID = f"meta-llama/{MODEL_NAME}"
 # Path is now dynamically set based on the MODEL_NAME
-OPTIMIZED_ROTATION_PATH = f"/app/models/{MODEL_NAME}/rotation/R.bin" 
+OPTIMIZED_ROTATION_PATH = "/app/models/rotation/meta-llama/Llama-3.2-3B-Instruct/R.bin"
 
 print("--- Starting Inference Script ---")
 
@@ -51,17 +51,18 @@ if tokenizer.pad_token is None:
 
 model = AutoModelForCausalLM.from_pretrained(
     model_args.input_model,
-    device_map='auto',  # Use all available GPUs
+    device_map='cuda:0',  # Use all available GPUs
     torch_dtype=torch.bfloat16,
     trust_remote_code=True,
 )
 
 print("Applying rotation and quantization...")
 # 4. Apply the SpinQuant rotation (R.bin)
-model = rotate_model(model, ptq_args) # ptq_args has the rotation path
+#model = rotate_model(model, ptq_args) # ptq_args has the rotation path
 
 # 5. Apply the W4A4KV4 quantization wrappers
 model = prepare_model(ptq_args, model)
+model.to('cuda:0')
 model.eval()
 
 print("--- Model is quantized and ready ---")
