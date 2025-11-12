@@ -2,49 +2,29 @@ import torch
 import sys
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from utils.process_args import process_args_ptq
-from eval_utils.rotation_utils import rotate_model
+# from eval_utils.rotation_utils import rotate_model  <--- REMOVED THIS IMPORT
 from train_utils.main import prepare_model
 
 # ---
-# This script mimics the model loading logic from ptq.py
+# This script loads a model with optimized rotation and quantization
+# and runs a sample inference.
+# It is intended to be called with arguments, similar to ptq.py
 # ---
-
-# !!!
-# Using a model-specific path structure as you suggested.
-# !!!
-MODEL_NAME = "Llama-3.2-3B-Instruct"
-MODEL_ID = f"meta-llama/{MODEL_NAME}"
-# Path is now dynamically set based on the MODEL_NAME
-OPTIMIZED_ROTATION_PATH = "/app/models/rotation/meta-llama/Llama-3.2-3B-Instruct/R.bin"
 
 print("--- Starting Inference Script ---")
 
-# 1. Manually set ALL arguments
-# We have to spoof sys.argv for the process_args_ptq function
-sys.argv = [
-    'run_inference.py',
-    '--input_model', MODEL_ID, # Use variable
-    '--w_bits', '4',
-    '--a_bits', '4',
-    '--k_bits', '4',
-    '--v_bits', '4',
-    '--w_clip',
-    '--a_asym',
-    '--k_asym',
-    '--v_asym',
-    '--k_groupsize', '128',
-    '--v_groupsize', '128',
-    '--rotate',
-    '--optimized_rotation_path', OPTIMIZED_ROTATION_PATH, # Use the corrected path
-    '--bf16',
-]
-
-# 2. Parse all arguments using the correct function
-# This will create all three objects: model_args, training_args, and ptq_args
-model_args, training_args, ptq_args = process_args_ptq()
+# 1. Parse arguments from command line
+# We no longer spoof sys.argv. We let process_args_ptq parse them.
+try:
+    model_args, training_args, ptq_args = process_args_ptq()
+except Exception as e:
+    print(f"Error parsing arguments: {e}")
+    print("Please ensure all required arguments are provided (e.g., --input_model, --w_bits, etc.)")
+    sys.exit(1)
 
 print(f"Loading base model: {model_args.input_model}")
-# 3. Load base tokenizer and model
+
+# 2. Load base tokenizer and model
 tokenizer = AutoTokenizer.from_pretrained(model_args.input_model, trust_remote_code=True)
 if tokenizer.pad_token is None:
     tokenizer.pad_token = tokenizer.eos_token
@@ -52,27 +32,29 @@ if tokenizer.pad_token is None:
 model = AutoModelForCausalLM.from_pretrained(
     model_args.input_model,
     device_map='cuda:0',  # Use all available GPUs
-    torch_dtype=torch.bfloat16,
+    torch_dtype=torch.bfloat16 if training_args.bf16 else torch.float16, # Use parsed arg
     trust_remote_code=True,
 )
 
-print("Applying rotation and quantization...")
-# 4. Apply the SpinQuant rotation (R.bin)
-#model = rotate_model(model, ptq_args) # ptq_args has the rotation path
+# --- ENTIRE ROTATION BLOCK REMOVED ---
+# The prepare_model function handles both rotation and quantization.
 
-# 5. Apply the W4A4KV4 quantization wrappers
+print("Applying rotation and quantization wrappers...")
+# 3. Apply rotation and quantization wrappers
 model = prepare_model(ptq_args, model)
+model.to('cuda:0')
 model.eval()
 
 print("--- Model is quantized and ready ---")
 
-# 6. Run inference
-prompt = "The capital of Israel is"
+# 4. Run inference
+prompt = "what is the capital of Israel ?"
 messages = [
     {"role": "user", "content": prompt},
 ]
 
-# Apply the Llama 3.2 instruct chat template
+# Apply the chat template
+# Note: This might need adjustment if using non-instruct models
 prompt_formatted = tokenizer.apply_chat_template(
     messages, 
     tokenize=False, 
@@ -81,7 +63,7 @@ prompt_formatted = tokenizer.apply_chat_template(
 
 inputs = tokenizer(prompt_formatted, return_tensors="pt").to(model.device)
 
-# Generate output
+# 5. Generate output
 outputs = model.generate(
     **inputs,
     max_new_tokens=50,
