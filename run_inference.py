@@ -49,17 +49,23 @@ print("--- Model is quantized and ready ---")
 
 # 4. Run inference
 prompt = "what is the capital of Israel ?"
-messages = [
-    {"role": "user", "content": prompt},
-]
 
-# Apply the chat template
-# Note: This might need adjustment if using non-instruct models
-prompt_formatted = tokenizer.apply_chat_template(
-    messages, 
-    tokenize=False, 
-    add_generation_prompt=True
-)
+# Conditionally apply chat template only if it exists
+if tokenizer.chat_template:
+    print("Applying chat template (Instruct/Chat model detected).")
+    messages = [
+        {"role": "user", "content": prompt},
+    ]
+
+    # Apply the chat template
+    prompt_formatted = tokenizer.apply_chat_template(
+        messages, 
+        tokenize=False, 
+        add_generation_prompt=True
+    )
+else:
+    print("No chat template found (Base model detected). Using raw prompt.")
+    prompt_formatted = prompt
 
 inputs = tokenizer(prompt_formatted, return_tensors="pt").to(model.device)
 
@@ -71,7 +77,6 @@ outputs = model.generate(
     temperature=0.7,
     top_p=0.9,
 )
-
 response = outputs[0][inputs["input_ids"].shape[-1]:]
 print(f"\nPrompt: {prompt}")
 print(f"Response: {tokenizer.decode(response, skip_special_tokens=True)}")
