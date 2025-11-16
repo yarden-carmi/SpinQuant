@@ -19,7 +19,7 @@ def prepare_model(args, model):
     model.eval()
 
     # Rotate the weights
-    fuse_norm_utils.fuse_layer_norms(model)
+    #fuse_norm_utils.fuse_layer_norms(model)
     apply_r3_r4.rotate_model(model, args)
     utils.cleanup_memory(verbos=True)
 

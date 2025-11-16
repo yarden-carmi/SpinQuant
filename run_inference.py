@@ -42,7 +42,7 @@ model = AutoModelForCausalLM.from_pretrained(
 print("Applying rotation and quantization wrappers...")
 # 3. Apply rotation and quantization wrappers
 model = prepare_model(ptq_args, model)
-model.to('auto')
+model.to(model.device)
 model.eval()
 
 print("--- Model is quantized and ready ---")
