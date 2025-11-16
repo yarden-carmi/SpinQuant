@@ -23,7 +23,7 @@ def fuse_ln_linear(
 
         # Calculating new weight and bias
         W_ = linear.weight.data.double()
-        linear.weight.data = (W_ * layernorm.weight.double()).to(linear_dtype)
+        linear.weight.data = (W_ * layernorm.weight.to(W_.dtype)).to(linear_dtype)
 
         if hasattr(layernorm, "bias"):
             if linear.bias is None:

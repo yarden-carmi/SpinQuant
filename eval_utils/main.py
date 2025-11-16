@@ -25,7 +25,7 @@ def ptq_model(args, model, model_args=None):
 
     # Rotate the weights
     if args.rotate:
-        fuse_norm_utils.fuse_layer_norms(model)
+        #fuse_norm_utils.fuse_layer_norms(model)
         rotation_utils.rotate_model(model, args)
         utils.cleanup_memory(verbos=True)
 

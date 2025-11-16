@@ -31,7 +31,7 @@ if tokenizer.pad_token is None:
 
 model = AutoModelForCausalLM.from_pretrained(
     model_args.input_model,
-    device_map='cuda:0',  # Use all available GPUs
+    device_map='auto',  # Use all available GPUs
     torch_dtype=torch.bfloat16 if training_args.bf16 else torch.float16, # Use parsed arg
     trust_remote_code=True,
 )
@@ -42,7 +42,7 @@ model = AutoModelForCausalLM.from_pretrained(
 print("Applying rotation and quantization wrappers...")
 # 3. Apply rotation and quantization wrappers
 model = prepare_model(ptq_args, model)
-model.to('cuda:0')
+model.to('auto')
 model.eval()
 
 print("--- Model is quantized and ready ---")
