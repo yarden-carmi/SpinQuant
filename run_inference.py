@@ -44,7 +44,7 @@ print("Applying rotation and quantization wrappers...")
 model = prepare_model(ptq_args, model)
 model.to(model.device)
 model.eval()
-
+print(model)
 print("--- Model is quantized and ready ---")
 
 # 4. Run inference
