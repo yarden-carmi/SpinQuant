@@ -13,14 +13,14 @@
 # Example Usage (from outside container):
 # docker compose run --rm spinquant bash scripts/1_run_inference.sh "meta-llama/Llama-3.2-3B-Instruct" 4 4 4 128
 
-MODEL_NAME="meta-llama/Llama-3.2-3B"
+MODEL_NAME="meta-llama/Llama-3.2-1B"
 W_BITS=4
 A_BITS=4
 KV_BITS=4
-GROUPSIZE=128
+GROUPSIZE=64
 
 # Construct the dynamic rotation path, mirroring scripts/2_eval_ptq.sh
-ROTATION_PATH="/home/jetson/Desktop/Models/models/rotation/meta-llama/Llama-3.2-3B/W4A4KV4GS128/R.bin"
+ROTATION_PATH="/home/jetson/Desktop/Models/models/rotation/meta-llama/Llama-3.2-1B/W4A4KV4GS64/R.bin"
 
 echo "Using rotation path: ${ROTATION_PATH}"
 # Just run the python script directly.
