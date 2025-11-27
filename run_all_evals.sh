@@ -17,11 +17,7 @@ echo "Results will be saved to $LOG_FILE"
 # Format: MODEL_NAME W_BIT A_BIT KV_BIT GROUPSIZE
 
 read -r -d '' MODELS_TO_RUN << EOM
-meta-llama/Llama-3.2-1B 4 4 4 64
 meta-llama/Llama-3.2-1B-Instruct 4 4 4 64
-meta-llama/Llama-3.2-3B 4 4 4 128
-meta-llama/Llama-3.2-3B-Instruct 4 4 4 128
-meta-llama/Meta-Llama-3-8B 4 4 4 128
 EOM
 
 # Loop through each line of the heredoc
@@ -60,6 +56,20 @@ while IFS= read -r line; do
     docker compose run --rm -T spinquant bash -c "bash scripts/1_run_inference.sh $MODEL_NAME $W_BIT $A_BIT $KV_BIT $GROUPSIZE" >> $LOG_FILE 2>&1
     if [ $? -ne 0 ]; then
         echo "ERROR during 1_run_inference.sh for $MODEL_NAME. Check $LOG_FILE." | tee -a $LOG_FILE
+    fi
+
+    # --- Step 4: Optimize Rotation (Executorch) ---
+    echo "\n--- Running 31_optimize_rotation_executorch.sh ---" | tee -a $LOG_FILE
+    docker compose run --rm -T spinquant bash -c "bash scripts/31_optimize_rotation_executorch.sh $MODEL_NAME $W_BIT $A_BIT $KV_BIT $GROUPSIZE" >> $LOG_FILE 2>&1
+    if [ $? -ne 0 ]; then
+        echo "ERROR during 31_optimize_rotation_executorch.sh for $MODEL_NAME. Check $LOG_FILE." | tee -a $LOG_FILE
+    fi
+
+    # --- Step 5: Eval PTQ (Executorch) ---
+    echo "\n--- Running 32_eval_ptq_executorch.sh ---" | tee -a $LOG_FILE
+    docker compose run --rm -T spinquant bash -c "bash scripts/32_eval_ptq_executorch.sh $MODEL_NAME $W_BIT $A_BIT $KV_BIT $GROUPSIZE" >> $LOG_FILE 2>&1
+    if [ $? -ne 0 ]; then
+        echo "ERROR during 32_eval_ptq_executorch.sh for $MODEL_NAME. Check $LOG_FILE." | tee -a $LOG_FILE
     fi
 
     echo "\nCOMPLETED: $MODEL_NAME (W${W_BIT}A${A_BIT}KV${KV_BIT}GS${GROUPSIZE})" | tee -a $LOG_FILE

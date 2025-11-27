@@ -356,7 +356,7 @@ class WeightQuantizer(torch.nn.Module):
         if self.mse:
             best = torch.full(
                 [x.shape[0], x.shape[1]], float("inf"), device=x.device
-            ).type_as(x)
+            )
             for i in range(int(self.maxshrink * self.grid)):
                 p = 1 - i / self.grid
                 xmin1 = p * xmin
