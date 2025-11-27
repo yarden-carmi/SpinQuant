@@ -5,3 +5,5 @@ __pycache__/
 .venv
 fast-hadamard-transform
 */fast-hadamard-transform/*
+/out/
+/logs/

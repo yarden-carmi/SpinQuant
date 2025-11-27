@@ -40,7 +40,7 @@ class RotateModule(nn.Module):
 
 
 def train() -> None:
-    dist.init_process_group(backend="nccl", timeout=datetime.timedelta(hours=8))
+    dist.init_process_group(backend="gloo", timeout=datetime.timedelta(hours=8))
     model_args, training_args, ptq_args = process_args_ptq()
     local_rank = get_local_rank()
 
