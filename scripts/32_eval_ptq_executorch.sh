@@ -7,7 +7,7 @@
 
 # nnodes determines the number of GPU nodes to utilize (usually 1 for an 8 GPU node)
 # nproc_per_node indicates the number of GPUs per node to employ.
-OUTPUT_DIR="./out/output/$1/W${2}A${3}KV${4}GS${5}/"
+OUTPUT_DIR="/home/jetson/Desktop/Models/models/output/$1/ETW${2}A${3}KV${4}GS${5}/"
 mkdir -p $OUTPUT_DIR
 
 torchrun --nnodes=1 --nproc_per_node=1 ptq.py \
@@ -31,6 +31,6 @@ torchrun --nnodes=1 --nproc_per_node=1 ptq.py \
 --k_groupsize $5 \
 --v_groupsize $5 \
 --rotate \
---optimized_rotation_path "./out/models/rotation/$1/W${2}A${3}KV${4}GS${5}/R.bin" \
+--optimized_rotation_path "/home/jetson/Desktop/Models/models/rotation/$1/ETW${2}A${3}KV${4}GS${5}/R.bin" \
 --save_qmodel_path "${OUTPUT_DIR}consolidated.00.pth" \
 --export_to_et
