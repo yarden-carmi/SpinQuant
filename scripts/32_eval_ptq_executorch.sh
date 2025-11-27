@@ -7,6 +7,9 @@
 
 # nnodes determines the number of GPU nodes to utilize (usually 1 for an 8 GPU node)
 # nproc_per_node indicates the number of GPUs per node to employ.
+OUTPUT_DIR="./out/output/$1/W${2}A${3}KV${4}GS${5}/"
+mkdir -p $OUTPUT_DIR
+
 torchrun --nnodes=1 --nproc_per_node=1 ptq.py \
 --input_model $1 \
 --do_train False \
@@ -16,12 +19,18 @@ torchrun --nnodes=1 --nproc_per_node=1 ptq.py \
 --fp16 False \
 --bf16 True \
 --save_safetensors False \
---w_bits 4 \
---a_bits 8 \
+--w_bits $2 \
+--a_bits $3 \
+--k_bits $4 \
+--v_bits $4 \
 --w_clip \
---w_groupsize 32 \
 --a_asym \
+--k_asym \
+--v_asym \
+--w_groupsize $5 \
+--k_groupsize $5 \
+--v_groupsize $5 \
 --rotate \
---optimized_rotation_path "your_path/R.bin" \
---save_qmodel_path "./your_output_model_path/consolidated.00.pth" \
+--optimized_rotation_path "./out/models/rotation/$1/W${2}A${3}KV${4}GS${5}/R.bin" \
+--save_qmodel_path "${OUTPUT_DIR}consolidated.00.pth" \
 --export_to_et
